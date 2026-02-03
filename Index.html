@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsversion='3' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/callouts/b' xmlns:data='http://www.google.com/callouts/data' xmlns:expr='http://www.google.com/callouts/expr'>
+<head>
+  <script type='text/javascript'>
+// Force Mobile to use Desktop Layout
+var uri = window.location.toString();
+if (uri.indexOf(&quot;?m=1&quot;,&quot;?m=1&quot;) &gt; 0) {
+  var clean_uri = uri.substring(0, uri.indexOf(&quot;?m=1&quot;));
+  window.history.replaceState({}, document.title, clean_uri);
+}
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mess Manager Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+      #saveReportBtn {
+    background: linear-gradient(135deg, #673ab7, #512da8);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(103, 58, 183, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid rgba(255,255,255,0.1);
+}
+
+#saveReportBtn:hover {
+    transform: translateY(-5px) scale(1.05); /* Lifts up and grows slightly */
+    box-shadow: 0 8px 25px rgba(103, 58, 183, 0.6);
+    background: linear-gradient(135deg, #7e57c2, #5e35b1);
+}
+
+#saveReportBtn:active {
+    transform: translateY(0) scale(0.98); /* Sinks in when clicked */
+}
+      /* Rounded & Attractive Bazar Input */
+.bazar-input {
+    border: 2px solid #2e7d32 !important;
+    border-radius: 20px !important; /* Makes it round */
+    padding: 5px 10px !important;
+    text-align: center;
+    background: #f1f8e9;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.bazar-input:focus {
+    border-color: #1b5e20 !important;
+    background: #ffffff;
+    box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+    outline: none;
+}
+
+/* Bazar Details Textarea */
+.bazar-details {
+    width: 90%;
+    min-height: 40px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 11px;
+    padding: 5px;
+    resize: vertical;
+    background: #fff;
+}
+
+.details-btn {
+    font-size: 10px;
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: underline;
+    display: block;
+    margin-top: 2px;
+}
+      .log-item {
+    position: relative;
+    padding-left: 10px;
+    margin-bottom: 12px;
+    border-left: 2px solid #e0e0e0;
+    font-size: 12px;
+}
+.log-time {
+    display: block;
+    font-size: 10px;
+    color: #888;
+    font-weight: bold;
+}
+.log-change {
+    background: #ffebee;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #c62828;
+    font-weight: bold;
+}
+.log-content b {
+    color: var(--primary);
+}
+      /* Ensure the capture doesn't overlap the sticky columns */
+.table-container {
+    background: white;
+    padding: 2px;
+}
+
+/* Optional: hide the save button/inputs from the image if they look messy */
+.canvas-hide {
+    display: none !important;
+}
+      /* Make the profile pic look clickable for guests */
+.guest-mode .user-profile {
+    border: 2px dashed var(--primary);
+    padding: 2px 8px;
+    border-radius: 50px;
+    background: #e8eaf6;
+}
+
+/* Ensure dropdown is wide enough for the button */
+.guest-mode .dropdown-menu {
+    min-width: 220px;
+}
+      /* Guest Mode UI Tweaks */
+.guest-mode .meal, .guest-mode .bazar-input {
+    pointer-events: none;
+    background-color: #f5f5f5 !important;
+}
+.guest-mode #save-btn, .guest-mode #save-indicator, .guest-mode #admin-panel {
+    display: none !important;
+}
+#guest-back-btn { display: none; }
+.guest-mode #guest-back-btn { display: block !important; }
+      /* Hide UI for Guests */
+.guest-mode #admin-panel,
+.guest-mode .bazar-input,
+.guest-mode button[onclick*="manualBackup"],
+.guest-mode #save-indicator {
+    display: none !important;
+}
+
+/* Disable clicking on meal cells for guests */
+.guest-mode .meal {
+    pointer-events: none;
+    background-color: #f9f9f9 !important;
+}
+
+.guest-mode .bazar-input {
+    pointer-events: none;
+    border: none;
+    background: transparent;
+}
+/* The ghost '0' in the background */
+.meal::placeholder {
+    color: #ccc;
+    opacity: 1;
+}
+
+/* No color by default when empty */
+.meal {
+    background-color: #fff; /* Plain white when empty */
+    width: 32px;
+    height: 26px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Blue color ONLY when a number (including 0) is actually typed */
+/* Blue: First entry */
+/* First time entry (Blue) */
+.meal.has-value { 
+    background-color: #e3f2fd !important; 
+    border-color: #2196f3 !important; 
+    color: #0d47a1 !important; 
+}
+
+/* After edit (Red) */
+.meal.was-edited { 
+    background-color: #ffebee !important; 
+    border-color: #ef5350 !important; 
+    color: #b71c1c !important; 
+}
+/* Fix for Modal Input Border */
+#modalInput {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    margin-bottom: 10px;
+    border: 2px solid #ddd; /* Explicit light gray border */
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box; /* Ensures padding doesn't push border out */
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#modalInput:focus {
+    border-color: var(--primary); /* Changes to blue when clicked */
+}
+        /* Color States */
+        .meal.has-value { background-color: #e3f2fd !important; color: #0d47a1; } /* Blue */
+.meal.was-edited { background-color: #ffebee !important; color: #b71c1c; } /* Red */
+        /* Modal Styling */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 320px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-history-list { font-size: 11px; color: #555; margin-top: 10px; max-height: 150px; overflow-y: auto; text-align: left; background: #f9f9f9; padding: 5px; border-radius: 5px; }
+        
+        :root { --primary: #1a237e; --secondary: #2e7d32; --danger: #c62828; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .header { background: white; padding: 10px 15px; border-bottom: 2px solid #ddd; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; position: relative; }
+        .profile-pic { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--primary); }
+        
+        .dropdown-menu { display: none; position: absolute; top: 50px; left: 0; background: white; min-width: 260px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; z-index: 2000; border: 1px solid #eee; cursor: default; }
+        .dropdown-menu.show { display: block; }
+
+        .table-container { width: 100%; overflow-x: auto; border: 1px solid #ccc; max-height: 60vh; background: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--primary); color: white; position: sticky; top: 0; z-index: 10; padding: 12px; border: 1px solid #ddd; }
+        td { border: 1px solid #eee; padding: 6px; text-align: center; }
+        .sticky-col { position: sticky; left: 0; background: white; font-weight: bold; border-right: 2px solid #ddd; z-index: 5; }
+        
+        .meal { background-color: #f1f1f1; width: 32px; height: 26px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 14px; }
+        .today-highlight { background: #fff9c4 !important; }
+        .bazar-input { border: 2px solid var(--secondary); background: #f1f8e9; width: 70px !important; font-weight: bold; }
+
+        .get-money { color: var(--secondary); font-weight: bold; }
+        .pay-money { color: var(--danger); font-weight: bold; }
+        #summaryText { margin: 15px; padding: 15px; background: white; border-radius: 10px; border: 1px solid #ddd; }
+
+        .history-card { background: white; padding: 20px; margin: 15px; border-radius: 12px; border: 1px solid #e0e0e0; }
+        #historyList { list-style: none; padding: 0; position: relative; max-height: 200px; overflow-y: auto; }
+        .log-item { position: relative; padding-left: 30px; margin-bottom: 15px; font-size: 12px; }
+        .log-time { display: block; font-size: 10px; color: #9e9e9e; font-weight: bold; }
+        .log-change { background: #f1f3f4; padding: 2px 4px; border-radius: 4px; color: var(--danger); font-family: monospace; }
+
+        .full-screen { position: fixed; inset: 0; background: linear-gradient(-45deg, #1a237e, #0d47a1); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .card { background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 360px; text-align: center; max-height: 90vh; overflow-y: auto; }
+
+        .member-tag { display: inline-block; background: #e8eaf6; padding: 4px 8px; border-radius: 15px; margin: 2px; font-size: 12px; border: 1px solid #c5cae9; }
+        .member-item { font-size: 12px; padding: 5px 0; border-bottom: 1px solid #f0f0f0; display: block; color: #333; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body onclick="window.closeDropdowns(event)">
+
+<div id="login-screen" class="full-screen">
+    <div class="card">
+        <h2 style="color: var(--primary);">Mess Manager Pro</h2>
+        <button onclick="window.login()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom: 10px;">Sign in with Google</button>
+        
+        <div style="margin: 10px 0; color: #777; font-size: 14px;">— OR —</div>
+        
+        <button onclick="window.enterAsGuest('MESS-FH4T')" style="width:100%; padding:12px; background:white; color:var(--primary); border:1px solid var(--primary); border-radius:8px; font-weight:bold; cursor:pointer;">View as Guest</button>
+    </div>
+</div>
+
+<div id="group-setup" class="full-screen" style="display: none;">
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">Join or Create Mess</h3>
+            <button onclick="window.logout()" style="padding:5px 10px; color:var(--danger); border:1px solid var(--danger); background:none; border-radius:5px; cursor:pointer; font-size:12px;">Logout</button>
+        </div>
+        
+        <input type="text" id="joinId" placeholder="Enter Group ID" style="width:90%; padding:10px; margin-bottom:10px;">
+        <button onclick="window.joinGroupRequest()" style="width:100%; padding:10px; background:var(--secondary); color:white; border:none; border-radius:8px; margin-bottom:15px;">Request to Join</button>
+        
+        <hr style="opacity: 0.3;">
+        
+        <button onclick="window.showCreateSection()" id="show-create-btn" style="width:100%; padding:10px; background:white; color:var(--primary); border:1px solid var(--primary); border-radius:8px; margin-top:10px; cursor:pointer;">Create New Mess</button>
+
+        <div id="create-section" class="hidden" style="margin-top:15px; text-align: left;">
+            <input type="text" id="newMessName" placeholder="New Mess Name" style="width:90%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                <input type="text" id="memberInput" placeholder="Add Member Name" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                <button onclick="window.addMemberStep()" style="padding:0 15px; background:var(--primary); color:white; border:none; border-radius:5px; cursor:pointer;">Add</button>
+            </div>
+            <div id="tempMemberList" style="margin-bottom:15px; min-height: 20px;"></div>
+            <button onclick="window.createGroup()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Confirm & Create</button>
+          <button onclick="location.reload()" style="width:100%; padding:8px; background:none; border:none; color:gray; font-size:12px; margin-top:10px; cursor:pointer;">← Back to Join</button>
+        </div>
+    </div>
+</div>
+
+<div id="main-content" style="display:none;">
+    <div class="header">
+        <div class="user-profile" onclick="window.toggleProfile(event)">
+            <img id="user-pic" class="profile-pic" src="" alt="U">
+            <div id="user-display-name" style="font-weight:bold; font-size:14px;">User</div>
+            <div id="profileDropdown" class="dropdown-menu" onclick="event.stopPropagation()">
+                <div id="admin-panel" style="display:none; background:#fff9c4; padding:10px; border-radius:8px; margin-bottom:10px;">
+                    <strong style="font-size:12px;">Pending Approvals</strong>
+                    <div id="pending-list" style="font-size:11px; margin-top:5px;"></div>
+                </div>
+                
+                <div style="margin-bottom:12px;">
+                    <strong style="font-size:12px; color:var(--primary);">Group Members</strong>
+                    <div id="dropdown-member-list" style="margin-top:5px; max-height:120px; overflow-y:auto;"></div>
+                </div>
+
+                <div style="font-size:11px; color:gray; margin-bottom:10px; display: flex; align-items: center; gap: 8px; border-top:1px solid #eee; padding-top:10px;">
+                    <span>ID: <b id="group-id-display"></b></span>
+                    <button onclick="window.copyGroupId(event)" style="background: #e8eaf6; border: 1px solid #c5cae9; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 10px; color: #1a237e;">Copy</button>
+                </div>
+                <button onclick="window.logout()" style="width:100%; padding:8px; color:var(--danger); background:none; border:1px solid var(--danger); border-radius:5px;">Logout</button>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span id="save-indicator" style="font-size:10px; color:gray; opacity:0;">Autosaving...</span>
+            <button onclick="window.manualBackup()" style="background:var(--secondary); color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold;">Save</button>
+        </div>
+    </div>
+
+    <div style="padding: 10px;">
+        <select id="monthSelect" onchange="window.loadData()" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+            </select>
+
+        <div class="table-container">
+            <table>
+                <thead id="tableHeader"></thead>
+                <tbody id="tableBody"></tbody>
+                <tfoot id="tableFooter"></tfoot>
+            </table>
+        </div>
+        <div id="summaryText"></div>
+        <div class="history-card">
+            <h4>Live Activity Logs</h4>
+            <ul id="historyList"></ul>
+        </div>
+<div style="display: flex; justify-content: flex-end; padding: 20px; margin-bottom: 40px;">
+    <button id="saveReportBtn" onclick="window.saveTableAsImage()">
+        <span style="font-size: 18px;">📸</span> 
+        <span>Download Full Report</span>
+    </button>
+</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteField } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC1fIaJVwhSPpr_4OdvcrAu29QXA93Lb10",
+        authDomain: "new-mess-e4e5a.firebaseapp.com",
+        projectId: "new-mess-e4e5a",
+        storageBucket: "new-mess-e4e5a.firebasestorage.app",
+        messagingSenderId: "234304597510",
+        appId: "1:234304597510:web:5bc918212a93669a68dd87"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+let originalData = { meals: [] }; // This will stay the same until month change
+    let currentUser = null, groupId = null, members = [], dataSnapshot = { meals: [], bazars: [], history: [] }, isAdmin = false, tempMembers = [];
+
+    function setupMonthSelector() {
+        const select = document.getElementById('monthSelect');
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        let options = "";
+        for (let i = 1; i <= 12; i++) {
+            const val = `${currentYear}-${i.toString().padStart(2, '0')}`;
+            const isSelected = i === currentMonth ? "selected" : "";
+            options += `<option value="${val}" ${isSelected}>📅 ${monthNames[i-1]} ${currentYear}</option>`;
+        }
+        select.innerHTML = options;
+    }
+    setupMonthSelector();
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('user-pic').src = user.photoURL;
+            document.getElementById('user-display-name').innerText = user.displayName;
+            
+            const uDoc = await getDoc(doc(db, "users", user.uid));
+            if (uDoc.exists() && uDoc.data().groupId) {
+                groupId = uDoc.data().groupId;
+                initApp();
+            } else { showScreen('group-setup'); }
+        } else { showScreen('login-screen'); }
+    });
+
+    window.joinGroupRequest = async () => {
+        const id = document.getElementById('joinId').value.trim().toUpperCase();
+        if (!id) return alert("Please enter a Group ID");
+        try {
+            const groupRef = doc(db, "groups", id);
+            const groupSnap = await getDoc(groupRef);
+            if (groupSnap.exists()) {
+                await updateDoc(groupRef, {
+                    pendingRequests: arrayUnion({ uid: currentUser.uid, name: currentUser.displayName })
+                });
+                alert("Request sent! Ask Admin to approve.");
+                document.getElementById('joinId').value = "";
+            } else { alert("Group not found."); }
+        } catch (e) { alert("Error: " + e.message); }
+    };
+
+    window.toggleProfile = (e) => {
+        e.stopPropagation();
+        document.getElementById('profileDropdown').classList.toggle('show');
+    };
+
+    window.closeDropdowns = (e) => {
+        if (!e.target.closest('.user-profile')) {
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+    };
+
+    window.addMemberStep = () => {
+    const name = document.getElementById('memberInput').value.trim();
+    if(name && !tempMembers.includes(name)){
+        tempMembers.push(name);
+        renderTempList();
+        document.getElementById('memberInput').value = "";
+    }
+};
+
+window.editTempMember = (index) => {
+    const newName = prompt("Edit member name:", tempMembers[index]);
+    if (newName && newName.trim() !== "") {
+        tempMembers[index] = newName.trim();
+        renderTempList();
+    }
+};
+
+window.removeTempMember = (index) => {
+    tempMembers.splice(index, 1);
+    renderTempList();
+};
+
+function renderTempList() {
+    document.getElementById('tempMemberList').innerHTML = tempMembers.map((m, i) => `
+        <span class="member-tag" style="cursor:pointer;" title="Click to edit">
+            <span onclick="window.editTempMember(${i})">${m}</span>
+            <b onclick="window.removeTempMember(${i})" style="margin-left:5px; color:red;">×</b>
+        </span>
+    `).join('');
+}
+
+    window.createGroup = async () => {
+        const name = document.getElementById('newMessName').value;
+        if(!name || tempMembers.length === 0) return alert("Enter Mess Name and Add Members");
+        const id = "MESS-" + Math.random().toString(36).substr(2, 4).toUpperCase();
+        await setDoc(doc(db, "groups", id), { groupName: name, members: tempMembers, adminId: currentUser.uid, pendingRequests: [] });
+        await setDoc(doc(db, "users", currentUser.uid), { groupId: id }, { merge: true });
+        location.reload();
+    };
+
+async function initApp() {
+    const gDoc = await getDoc(doc(db, "groups", groupId));
+    if (gDoc.exists()) {
+        const info = gDoc.data();
+        members = info.members;
+        const connectedUsers = info.connectedUsers || {}; // Stores {uid: {name, photo}}
+        isAdmin = info.adminId === currentUser.uid;
+        
+        document.getElementById('group-id-display').innerText = groupId;
+
+        const isGuest = document.body.classList.contains('guest-mode');
+
+        if (isGuest) {
+            document.getElementById('profileDropdown').innerHTML = `
+                <div style="text-align: center; padding: 10px;">
+                    <p style="font-size: 13px; color: #555;">You are in <b>Demo Mode</b></p>
+                    <button onclick="window.login()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom:10px;">Sign in with Google</button>
+                    <button onclick="location.reload()" style="width:100%; padding:8px; background:none; border:1px solid #ccc; border-radius:5px; font-size:12px; cursor:pointer;">Exit Demo</button>
+                </div>
+            `;
+        } else {
+            // Updated Dropdown Content
+            let memberListHTML = `<strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:5px;">Authorized Editors</strong>`;
+            
+            // Loop through users who have actually joined via Google
+            for (const [uid, userObj] of Object.entries(connectedUsers)) {
+                const isMe = uid === currentUser.uid;
+                const canKick = isAdmin && !isMe; // Admin can kick others, but not themselves
+
+                memberListHTML += `
+                    <div class="member-item" style="display:flex; justify-content:space-between; align-items:center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="${userObj.photo || ''}" style="width:20px; height:20px; border-radius:50%; background:#eee;">
+                            <span style="font-size:12px;">${userObj.name} ${isMe ? '(You)' : ''}</span>
+                        </div>
+                        ${canKick ? `<button onclick="window.kickUser('${uid}', '${userObj.name}')" style="background:none; border:1px solid var(--danger); color:var(--danger); padding:2px 6px; border-radius:4px; cursor:pointer; font-size:10px;">Kick</button>` : ''}
+                    </div>`;
+            }
+
+            document.getElementById('dropdown-member-list').innerHTML = memberListHTML;
+        }
+
+        if (isAdmin) {
+            document.getElementById('admin-panel').style.display = 'block';
+            renderPendingList(info.pendingRequests || []);
+        }
+        buildTable();
+        window.loadData();
+        showScreen('main-content');
+    }
+}
+
+    function buildTable() {
+        let h = `<tr><th class="sticky-col">Date</th>${members.map(m => `<th>${m}</th>`).join('')}<th>Total</th></tr>`;
+        document.getElementById('tableHeader').innerHTML = h;
+        
+        let b = "";
+        const now = new Date();
+        const todayDate = now.getDate();
+        const selectedMonthVal = document.getElementById('monthSelect').value;
+        const isCurrentMonth = selectedMonthVal === `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
+        for (let i = 1; i <= 31; i++) {
+            let rowClass = (isCurrentMonth && i === todayDate) ? 'today-highlight' : '';
+            let row = `<tr id="row-day-${i}" class="${rowClass}"><td class="sticky-col">${i}</td>`;
+            members.forEach((_, idx) => {
+                // Modified inputs: no default value, gray placeholder "0", and enter-key support
+                // Inside buildTable loop:
+// Inside your buildTable function, update the input string:
+row += `<td><div style="display:flex; gap:3px; justify-content:center;">
+    <input type="number" class="meal" data-day="${i}" data-p="${idx}" data-sub="0" placeholder="0" 
+           onclick="window.openMealModal(this)" 
+           oninput="window.triggerAutosave(this)" 
+           onkeydown="window.handleEnterNav(event, this)">
+    <input type="number" class="meal" data-day="${i}" data-p="${idx}" data-sub="1" placeholder="0" 
+           onclick="window.openMealModal(this)" 
+           oninput="window.triggerAutosave(this)"
+           onkeydown="window.handleEnterNav(event, this)">
+</div></td>`;
+            });
+            row += `<td class="day-total">0</td></tr>`;
+            b += row;
+        }
+        document.getElementById('tableBody').innerHTML = b;
+        
+        // Inside buildTable function... replace the footer part:
+let f = `
+    <tr style="background:#eee; font-weight:bold;">
+        <td class="sticky-col">Total</td>${members.map((_, i) => `<td id="pTotal${i}">0</td>`).join('')}<td id="grandTotal">0</td>
+    </tr>
+    <tr>
+        <td class="sticky-col">Bazar</td>
+        ${members.map((_, i) => `
+            <td>
+                <input type="number" class="bazar-input" id="baz${i}" placeholder="TK" oninput="window.triggerAutosave()">
+                <span class="details-btn" onclick="document.getElementById('det-box-${i}').classList.toggle('hidden')">📝 Details</span>
+                <textarea id="det-box-${i}" class="bazar-details hidden" placeholder="Item list..." oninput="window.triggerAutosave()"></textarea>
+            </td>
+        `).join('')}
+        <td id="totalBazar">0</td>
+    </tr>
+    <tr style="background:#fff3e0;"><td class="sticky-col">Cost</td>${members.map((_, i) => `<td id="pCost${i}">0</td>`).join('')}<td id="rateDisp">Rate: 0</td></tr>
+    <tr style="background:#fce4ec;"><td class="sticky-col">Balance</td>${members.map((_, i) => `<td id="pBal${i}">0</td>`).join('')}<td>+/-</td></tr>`;
+document.getElementById('tableFooter').innerHTML = f;
+    }
+
+window.calculate = () => {
+    let tBazar = 0;
+    let pMeals = Array(members.length).fill(0);
+    let gMeals = 0;
+
+    // 1. Calculate Total Bazar (Taka)
+    members.forEach((_, i) => {
+        const val = parseFloat(document.getElementById(`baz${i}`).value) || 0;
+        tBazar += val;
+    });
+
+    // 2. Calculate Meals per person
+    document.querySelectorAll('#tableBody tr').forEach(row => {
+        let rSum = 0;
+        row.querySelectorAll('.meal').forEach((inp, idx) => {
+            let v = parseFloat(inp.value) || 0;
+            pMeals[Math.floor(idx / 2)] += v; // Groups M1 and M2 for the same person
+            rSum += v;
+        });
+        const dayTotalCell = row.querySelector('.day-total');
+        if (dayTotalCell) dayTotalCell.innerText = rSum; 
+        gMeals += rSum;
+    });
+
+    // 3. Calculate Rate
+    const rate = gMeals > 0 ? tBazar / gMeals : 0;
+    
+    // 4. Update Footer UI
+    document.getElementById('totalBazar').innerText = tBazar.toLocaleString(); // Total Bazar
+    document.getElementById('grandTotal').innerText = gMeals; // Total Meals
+    document.getElementById('rateDisp').innerText = "Rate: " + rate.toFixed(4);
+
+    // 5. Update Summary and Individual Costs
+    let summaryHTML = `<h3 style="margin:0 0 10px 0; color:var(--primary);">Final Calculation</h3>`;
+    
+    members.forEach((name, i) => {
+        const pTotalMeal = pMeals[i];
+        const pBazar = parseFloat(document.getElementById(`baz${i}`).value) || 0;
+        const pCost = pTotalMeal * rate;
+        const pBalance = pBazar - pCost;
+
+        // Update Table Cells
+        document.getElementById(`pTotal${i}`).innerText = pTotalMeal;
+        document.getElementById(`pCost${i}`).innerText = Math.round(pCost);
+        
+        const balCell = document.getElementById(`pBal${i}`);
+        balCell.innerText = Math.round(pBalance);
+        balCell.className = pBalance >= 0 ? "get-money" : "pay-money";
+
+        // Build Summary Text
+        summaryHTML += `
+            <div style="padding: 8px 0; border-bottom: 1px dashed #ccc; font-size: 14px;">
+                <strong>${name}</strong>: ${pTotalMeal} Meals | 
+                Cost: ${Math.round(pCost)} TK | 
+                ${pBalance >= 0 
+                    ? `<span class="get-money">Gets ${Math.round(pBalance)} TK</span>` 
+                    : `<span class="pay-money">Pays ${Math.abs(Math.round(pBalance))} TK</span>`}
+            </div>`;
+    });
+    document.getElementById('summaryText').innerHTML = summaryHTML;
+};
+  const renderHistory = (historyArr) => {
+    const list = document.getElementById('historyList');
+    if (!list) return;
+
+    // Show latest logs on top
+    list.innerHTML = historyArr.slice().reverse().map(log => {
+        // Extract Time from [Time]
+        const timeMatch = log.match(/\[(.*?)\]/);
+        const time = timeMatch ? timeMatch[1] : "";
+        let content = log.replace(/\[.*?\]/, "").trim();
+
+        // Formatting: Bold names and highlight "0 -> 1" changes
+        content = content
+            .replace(/^(\w+)/, '<b>$1</b>') // Bolds the editor name
+            .replace(/(\w+'s)/, '<b>$1</b>') // Bolds the person being changed
+            .replace(/(\d+(\.\d+)?→\d+(\.\d+)?)/g, '<span class="log-change">$1</span>'); // Highlights numbers
+
+        return `
+            <li class="log-item">
+                <span class="log-time">${time}</span>
+                <div class="log-content">${content}</div>
+            </li>`;
+    }).join('');
+};
+let autosaveTimer;
+
+window.triggerAutosave = (inputEl) => {
+    window.calculate();
+
+    if (inputEl) {
+        const mealInputs = Array.from(document.querySelectorAll('.meal'));
+        const index = mealInputs.indexOf(inputEl);
+        
+        // We compare against dataSnapshot.meals, which is the "Database Truth"
+        const dbVal = dataSnapshot.meals[index] || ""; 
+        const currentVal = inputEl.value;
+
+        inputEl.classList.remove('has-value', 'was-edited');
+
+        if (currentVal !== "") {
+            // If the current value is different from what's in the DB -> RED
+            if (dbVal !== "" && currentVal !== dbVal) {
+                inputEl.classList.add('was-edited');
+            } else {
+                // If it's the first time entering or matches DB -> BLUE
+                inputEl.classList.add('has-value');
+            }
+        }
+    }
+
+    // Debounce Save to Database
+    clearTimeout(autosaveTimer);
+    const indicator = document.getElementById('save-indicator');
+    if(indicator) indicator.style.opacity = 1;
+
+    autosaveTimer = setTimeout(() => {
+        window.manualBackup(); 
+        if(indicator) indicator.style.opacity = 0;
+    }, 1000); 
+};
+
+window.manualBackup = async () => {
+    if (document.body.classList.contains('guest-mode')) return;
+    
+    const month = document.getElementById('monthSelect').value;
+    const mealInputs = document.querySelectorAll('.meal');
+    const meals = Array.from(mealInputs).map(i => i.value);
+    const bazars = members.map((_, i) => document.getElementById(`baz${i}`).value || "0");
+    const details = members.map((_, i) => document.getElementById(`det-box-${i}`).value || "");
+    
+    let newLogs = [];
+    const editor = currentUser.displayName.split(' ')[0];
+    const now = new Date();
+    const timeStr = now.toLocaleDateString([], { month: 'short', day: '2-digit' }) + ", " + 
+                  now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    // Compare current UI values against the dataSnapshot (DB)
+    meals.forEach((v, i) => {
+        const oldVal = dataSnapshot.meals[i] === undefined ? "" : dataSnapshot.meals[i];
+        if (v !== oldVal) {
+            const inputEl = mealInputs[i];
+            const day = inputEl.dataset.day;
+            const person = members[inputEl.dataset.p];
+            const mealType = parseInt(inputEl.dataset.sub) === 0 ? "M1" : "M2";
+            
+            newLogs.push(`[${timeStr}] ${editor} changed ${person}'s ${mealType} ${oldVal || '0'}→${v || '0'} on day ${day}`);
+            
+            // UPDATE THE DB SNAPSHOT IMMEDIATELY IN MEMORY
+            dataSnapshot.meals[i] = v; 
+        }
+    });
+
+    if (newLogs.length > 0) {
+        // Sync to Firebase
+        const docRef = doc(db, "groups", groupId, "records", month);
+        await setDoc(docRef, { meals, bazars, details, history: arrayUnion(...newLogs) }, { merge: true });
+
+        // Update the Logs UI instantly
+        dataSnapshot.history = [...(dataSnapshot.history || []), ...newLogs];
+        renderHistory(dataSnapshot.history);
+    }
+};
+
+window.loadData = async () => {
+    buildTable(); 
+    const month = document.getElementById('monthSelect').value;
+    const dDoc = await getDoc(doc(db, "groups", groupId, "records", month));
+    const mInps = document.querySelectorAll('.meal');
+    
+if (dDoc.exists()) {
+        const d = dDoc.data();
+        
+        // 1. Sync the snapshot with the database data
+        dataSnapshot = { 
+            meals: [...(d.meals || [])], 
+            bazars: [...(d.bazars || [])], 
+            history: [...(d.history || [])] 
+        };
+        
+        // 2. Keep originalData as the reference for the "Red/Blue" logic
+        originalData.meals = [...(d.meals || [])];
+            
+        mInps.forEach((inp, i) => {
+            const val = (d.meals && d.meals[i] !== undefined) ? d.meals[i] : ""; 
+            inp.value = val;
+            
+            // Clear old classes before re-applying
+            inp.classList.remove('has-value', 'was-edited');
+            
+            if (val !== "" && val !== null) {
+                const day = inp.dataset.day;
+                const person = members[inp.dataset.p];
+                const mealType = parseInt(inp.dataset.sub) === 0 ? "M1" : "M2";
+
+                // AUTO COLOR DETECTION
+                // Count how many times this specific box appears in history
+                const editCount = (d.history || []).filter(log => 
+                    log.includes(`${person}'s ${mealType}`) && log.includes(`on day ${day}`)
+                ).length;
+                
+                // Logic: 
+                // If it was only entered once ever = BLUE
+                // If it has been changed (appears > 1 time in history) = RED
+                if (editCount > 1) {
+                    inp.classList.add('was-edited'); 
+                } else if (editCount === 1) {
+                    inp.classList.add('has-value');  
+                }
+            }
+        });
+
+        // 3. Load Bazar values
+        members.forEach((_, i) => {
+            const bVal = (d.bazars && d.bazars[i] !== "0") ? d.bazars[i] : "";
+            document.getElementById(`baz${i}`).value = bVal;
+        });
+  members.forEach((_, i) => {
+            const detBox = document.getElementById(`det-box-${i}`);
+            if (detBox && d.details && d.details[i]) {
+                detBox.value = d.details[i];
+                detBox.classList.remove('hidden'); // Show the box if it has text
+            }
+        });
+
+        // 4. Update the Activity Logs UI
+        renderHistory(d.history || []);
+    } else {
+        // Reset if no data exists for the selected month
+        dataSnapshot = { meals: [], bazars: [], history: [] };
+        originalData.meals = [];
+        mInps.forEach(inp => {
+            inp.value = "";
+            inp.classList.remove('has-value', 'was-edited');
+        });
+        renderHistory([]);
+    }
+    window.calculate();
+};
+
+    window.approveUser = async (uid, name, event) => {
+    if(event) event.stopPropagation(); 
+    try {
+        await setDoc(doc(db, "users", uid), { groupId: groupId }, { merge: true });
+        
+        // Save user into the 'connectedUsers' object
+        await updateDoc(doc(db, "groups", groupId), {
+            [`connectedUsers.${uid}`]: { name: name }, 
+            pendingRequests: arrayRemove({ uid: uid, name: name })
+        });
+
+        alert(name + " Approved!");
+        location.reload();
+    } catch (e) { alert("Error: " + e.message); }
+}
+
+    window.rejectUser = async (uid, name, event) => {
+        if(event) event.stopPropagation();
+        if(confirm(`Reject ${name}'s request?`)) {
+            try {
+                await updateDoc(doc(db, "groups", groupId), { pendingRequests: arrayRemove({ uid: uid, name: name }) });
+                location.reload();
+            } catch (e) { alert("Error: " + e.message); }
+        }
+    }
+
+    function renderPendingList(reqs) {
+        const list = document.getElementById('pending-list');
+        if (reqs.length === 0) { list.innerHTML = "<div style='color:gray; padding:10px;'>No pending requests</div>"; return; }
+        list.innerHTML = reqs.map(r => `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; background:white; padding:10px; border-radius:6px; border:1px solid #ddd;">
+                <span style="font-weight:bold; color:#333; font-size:12px;">${r.name}</span>
+                <div style="display:flex; gap:5px;">
+                    <button onclick="window.approveUser('${r.uid}', '${r.name}', event)" style="background:#2e7d32; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-weight:bold; font-size:11px;">OK</button>
+                    <button onclick="window.rejectUser('${r.uid}', '${r.name}', event)" style="background:#c62828; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-weight:bold; font-size:11px;">X</button>
+                </div>
+            </div>`).join('');
+    }
+
+    let activeInput = null;
+window.openMealModal = (el) => {
+    // 1. Only open modal if the box has a value (is Blue or Red)
+    // If you want to allow clicking empty boxes to open the modal, remove the next line:
+    if (el.value === "" || el.value === null) return; 
+
+    activeInput = el;
+    const day = el.dataset.day;
+    const person = members[el.dataset.p];
+    const mealType = parseInt(el.dataset.sub) === 0 ? "M1" : "M2";
+
+    document.getElementById('modalInput').value = el.value;
+    document.getElementById('modalTitle').innerText = `Day ${day} (${mealType}) - ${person}`;
+
+    const relevantLogs = (dataSnapshot.history || [])
+        .filter(log => 
+            log.includes(`${person}'s ${mealType}`) && 
+            log.includes(`on day ${day}`)
+        )
+        .reverse();
+
+    document.getElementById('modalHistory').innerHTML = relevantLogs.length > 0 
+        ? relevantLogs.map(l => {
+            const parts = l.split(']');
+            const timePart = parts[0].replace('[', '');
+            const msgPart = parts[1];
+            return `<div style="margin-bottom:5px; border-bottom:1px solid #eee; padding-bottom:2px;">
+                        <small style="color:#888; display:block;">${timePart}</small>
+                        ${msgPart}
+                    </div>`;
+        }).join('') 
+        : "No edit history";
+
+    // 2. Show the modal
+    const modal = document.getElementById('mealModal');
+    modal.style.display = 'flex';
+
+    // 3. AUTO-FOCUS logic: We use a slight timeout to ensure the element is visible 
+    // before the browser tries to place the cursor inside.
+    setTimeout(() => {
+        const input = document.getElementById('modalInput');
+        input.focus();
+        input.select(); // This selects the text so typing immediately replaces it
+    }, 50);
+};
+window.enterAsGuest = async (fixedId) => {
+    groupId = fixedId;
+    currentUser = { 
+        displayName: "Guest", 
+        photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" 
+    };
+    document.body.classList.add('guest-mode');
+    document.getElementById('user-pic').src = currentUser.photoURL;
+    document.getElementById('user-display-name').innerText = "Demo Mode";
+    
+    // Show the back button in the header
+    const headerBtns = document.querySelector('.header div:last-child');
+    if(!document.getElementById('guest-back-btn')){
+        headerBtns.insertAdjacentHTML('afterbegin', `<button id="guest-back-btn" onclick="location.reload()" style="background:#eee; border:1px solid #ccc; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-right:10px;">← Back</button>`);
+    }
+
+    initApp();
+    window.initGuestScrollTrigger();
+};
+
+window.initGuestScrollTrigger = () => {
+    let modalShown = false;
+    window.addEventListener('scroll', () => {
+        if (modalShown || !document.body.classList.contains('guest-mode')) return;
+        if ((window.innerHeight + window.pageYOffset) >= document.documentElement.scrollHeight - 50) {
+            document.getElementById('guest-bottom-modal').style.display = 'flex';
+            modalShown = true;
+        }
+    });
+};
+    window.login = () => signInWithPopup(auth, provider);
+    window.logout = () => signOut(auth).then(() => location.reload());
+    function showScreen(id) {
+        document.querySelectorAll('.full-screen').forEach(s => s.style.display = 'none');
+        document.getElementById('main-content').style.display = (id === 'main-content') ? 'block' : 'none';
+        if (id !== 'main-content') document.getElementById(id).style.display = 'flex';
+    }
+    window.copyGroupId = (event) => {
+        event.stopPropagation();
+        const idText = document.getElementById('group-id-display').innerText;
+        navigator.clipboard.writeText(idText).then(() => {
+            const btn = event.target;
+            btn.innerText = "Copied!";
+            setTimeout(() => btn.innerText = "Copy", 2000);
+        });
+    };
+  // Enable Enter key navigation for meal inputs
+document.getElementById('tableBody').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.classList.contains('meal')) {
+        e.preventDefault(); // Stop the Enter key from submitting anything
+        
+        const inputs = Array.from(document.querySelectorAll('.meal'));
+        const index = inputs.indexOf(e.target);
+        
+        // Find the next input in the list
+        if (index > -1 && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+            // Optional: Select the text so it's easy to overwrite
+            inputs[index + 1].select();
+        }
+    }
+});
+  // 1. Function to enter as Guest
+window.enterAsGuest = async (fixedId) => {
+    groupId = fixedId;
+    currentUser = { 
+        displayName: "Guest View", 
+        photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" 
+    };
+
+    document.body.classList.add('guest-mode');
+    document.getElementById('user-pic').src = currentUser.photoURL;
+    document.getElementById('user-display-name').innerText = currentUser.displayName;
+    
+    initApp();
+
+    // --- NEW: 1 Minute Sign-in Popup ---
+    setTimeout(() => {
+        // Only show if they are still in guest mode (haven't logged in manually)
+        if (document.body.classList.contains('guest-mode')) {
+            document.getElementById('guest-nag-modal').style.display = 'flex';
+        }
+    }, 60000); // 60,000ms = 1 minute
+};
+// Function to handle the scroll trigger
+window.initGuestScrollTrigger = () => {
+    let modalShown = false; // Ensures it only pops up once per session
+
+    window.addEventListener('scroll', () => {
+        if (modalShown || !document.body.classList.contains('guest-mode')) return;
+
+        // Check if user has scrolled near the bottom (within 50px)
+        const scrollPosition = window.innerHeight + window.pageYOffset;
+        const pageHeight = document.documentElement.scrollHeight;
+
+        if (scrollPosition >= pageHeight - 50) {
+            document.getElementById('guest-bottom-modal').style.display = 'flex';
+            modalShown = true; // Prevent it from popping up again immediately
+        }
+    });
+};
+
+// Update your existing enterAsGuest function to call the trigger
+window.enterAsGuest = async (fixedId) => {
+    groupId = fixedId;
+    currentUser = { 
+        displayName: "Guest View", 
+        photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" 
+    };
+
+    document.body.classList.add('guest-mode');
+    document.getElementById('user-pic').src = currentUser.photoURL;
+    document.getElementById('user-display-name').innerText = currentUser.displayName;
+    
+    initApp();
+    
+    // Start listening for the scroll to the bottom
+    window.initGuestScrollTrigger();
+};
+  window.showCreateSection = () => {
+    // Hide the Join ID input and the Join button
+    document.getElementById('joinId').style.display = 'none';
+    document.querySelector('button[onclick*="joinGroupRequest"]').style.display = 'none';
+    document.getElementById('show-create-btn').style.display = 'none'; // Hide the toggle button itself
+    
+    // Show the create section
+    document.getElementById('create-section').classList.remove('hidden');
+};
+  window.saveModalMeal = () => {
+    if (!activeInput) return;
+
+    const newValue = document.getElementById('modalInput').value;
+    const oldValue = activeInput.value;
+
+    // Only update if the value is actually different
+    if (newValue !== oldValue) {
+        activeInput.value = newValue;
+        
+        // This is the FIX: Pass the input element to triggerAutosave 
+        // so it can update the CSS classes (Red/Blue) immediately.
+        window.triggerAutosave(activeInput); 
+    }
+
+    // Close the modal
+    document.getElementById('mealModal').style.display = 'none';
+    activeInput = null;
+};
+window.saveTableAsImage = () => {
+    const tableContainer = document.querySelector('.table-container');
+    const originalStyle = tableContainer.style.maxHeight;
+
+    // 1. Temporarily show full table
+    tableContainer.style.maxHeight = 'none';
+
+    // 2. Capture (using the container specifically)
+    html2canvas(tableContainer, {
+        backgroundColor: "#ffffff",
+        scale: 2, 
+        logging: false,
+        useCORS: true,
+        // This ensures the capture only looks at the table area
+        scrollX: 0,
+        scrollY: -window.scrollY 
+    }).then(canvas => {
+        tableContainer.style.maxHeight = originalStyle;
+
+        const link = document.createElement('a');
+        const date = new Date().toLocaleDateString();
+        link.download = `Mess-Report-${date}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    }).catch(err => {
+        console.error("Capture failed:", err);
+        tableContainer.style.maxHeight = originalStyle;
+    });
+};
+</script>
+
+<div id="mealModal" class="modal-overlay" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 id="modalTitle" style="margin-top:0; font-size: 16px;">Edit Meal</h3>
+        <input type="number" id="modalInput" style="width: 100%; padding: 10px; font-size: 18px; margin-bottom: 10px;">
+        <div id="modalHistory" class="modal-history-list"></div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button onclick="window.saveModalMeal()" style="flex:1; padding:10px; background:var(--primary); color:white; border:none; border-radius:5px;">Save</button>
+            <button onclick="document.getElementById('mealModal').style.display='none'" style="flex:1; padding:10px; background:#ddd; border:none; border-radius:5px;">Cancel</button>
+        </div>
+    </div>
+</div>
+ <div id="guest-bottom-modal" class="modal-overlay">
+    <div class="modal-content" style="text-align: center; border-top: 5px solid var(--primary);">
+        <h3 style="color: var(--primary);">Want to manage your meals?</h3>
+        <p style="font-size: 14px; color: #555;">Sign in to start tracking your own bazar and meal records!</p>
+        <div style="display:flex; flex-direction: column; gap:10px; margin-top:20px;">
+            <button onclick="window.login()" style="padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Sign in with Google</button>
+          <div style="margin: 10px 0; color: #777; font-size: 14px;">— OR —</div>
+<button onclick="window.enterAsGuest('MESS-ZLVJ')" style="width:100%; padding:12px; background:white; color:var(--primary); border:1px solid var(--primary); border-radius:8px; font-weight:bold; cursor:pointer;">View as Guest (Demo)</button>
+            <button onclick="document.getElementById('guest-bottom-modal').style.display='none'" style="padding:10px; background:none; border:none; color: #888; cursor:pointer; font-size: 12px; text-decoration: underline;">Maybe Later</button>
+        </div>
+    </div>
+</div>
+  <div id="guest-bottom-modal" class="modal-overlay">
+    <div class="modal-content" style="text-align: center;">
+        <h3 style="color: var(--primary);">Demo Mode</h3>
+        <p>You are viewing <b>MESS-ZLVJ</b></p>
+        <button onclick="window.login()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; margin-bottom:10px;">Sign in with Google</button>
+        <button onclick="location.reload()" style="width:100%; padding:10px; background:none; border:1px solid #ccc; border-radius:8px;">← Exit Demo</button>
+        <p onclick="document.getElementById('guest-bottom-modal').style.display='none'" style="font-size:12px; color:gray; cursor:pointer; margin-top:10px;">Close</p>
+    </div>
+</div>
+</body>
+</html>
